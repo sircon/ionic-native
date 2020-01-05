@@ -1,24 +1,24 @@
-import { Injectable } from '@angular/core';
-import { Plugin, Cordova, IonicNativePlugin } from '@ionic-native/core';
-import { Observable } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { Plugin, Cordova, IonicNativePlugin } from "@ionic-native/core";
+import { Observable } from "rxjs";
 
 /**
  * @name Purchases
  * @description
- * Purchases is a cross platform solution for managing in-app subscriptions. A backend is also provided via [RevenueCat](https://www.revenuecat.com)
+ * Purchases is a client for the [RevenueCat](https://www.revenuecat.com/) subscription and purchase tracking system. It is an open source framework that provides a wrapper around `BillingClient`, `StoreKit` and the RevenueCat backend to make implementing in-app subscriptions easy - receipt validation and status tracking included!
  *
  * ## Features
- * |     | RevenueCat                                                                                                                                                   |
- * | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
- * | ✅  | Server-side receipt validation                                                                                                                               |
- * | ➡️  | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more |
- * | 🎯  | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web                                                      |
- * | 📊  | Analytics - automatic calculation of metrics like conversion, mrr, and churn                                                                                 |
- * | 📝  | [Online documentation](https://docs.revenuecat.com/docs) up to date                                                                                          |
- * | 🔀  | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it                           |
- * | 💯  | Well maintained - [frequent releases](https://github.com/RevenueCat/purchases-ios/releases)                                                                  |
- * | 📮  | Great support - [Help Center](https://docs.revenuecat.com/discuss)                                                                                           |
- * | 🤩  | Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)                                                                             |
+ * |     | RevenueCat
+ * | --- | --- |
+ * | ✅  | Server-side receipt validation
+ * | ➡️   | [Webhooks](https://docs.revenuecat.com/docs/webhooks) - enhanced server-to-server communication with events for purchases, renewals, cancellations, and more
+ * | 🎯  | Subscription status tracking - know whether a user is subscribed whether they're on iOS, Android or web
+ * | 📊  | Analytics - automatic calculation of metrics like conversion, mrr, and churn
+ * | 📝  | [Online documentation](https://docs.revenuecat.com/docs) up to date
+ * | 🔀  | [Integrations](https://www.revenuecat.com/integrations) - over a dozen integrations to easily send purchase data where you need it
+ * | 💯  | Well maintained - [frequent releases](https://github.com/RevenueCat/cordova-plugin-purchases/releases)
+ * | 📮  | Great support - [Help Center](https://docs.revenuecat.com/discuss)
+ * | 🤩  | Awesome [new features](https://trello.com/b/RZRnWRbI/revenuecat-product-roadmap)
  *
  * ## Getting Started
  *
@@ -51,17 +51,17 @@ import { Observable } from 'rxjs';
  * Below is an example of fetching entitlements and launching an upsell screen.
  *
  * ```typescript
- * this.purchases.getEntitlements()
- *      .subscribe(entitlements => ,
+ * this.purchases.getOfferings()
+ *      .subscribe(offerings => ,
  *                 error => );
  * ```
  *
  * #### 4. Make a purchase
  *
- * When it comes time to make a purchase, _Purchases_ has a simple method, `makePurchase`. The code sample below shows the process of purchasing a product and confirming it unlocks the "my_entitlement_identifier" content.
+ * When it comes time to make a purchase, _Purchases_ has a simple method, `purchaseProduct`. The code sample below shows the process of purchasing a product and confirming it unlocks the "my_entitlement_identifier" content.
  *
  * ```typescript
- * this.purchases.makePurchase("product_id")
+ * this.purchases.purchaseProduct("product_id")
  *      .subscribe(response => {
  *          if (response.purchaserInfo.activeEntitlements.includes("my_entitlement_identifier")) {
  *              // Unlock content
@@ -72,7 +72,7 @@ import { Observable } from 'rxjs';
  *
  * ```
  *
- * `makePurchase` handles the underlying framework interaction and automatically validates purchases with Apple and Google through our secure servers. This helps reduce in-app purchase fraud and decreases the complexity of your app. Receipt tokens are stored remotely and always kept up-to-date.
+ * `purchaseProduct` handles the underlying framework interaction and automatically validates purchases with Apple and Google through our secure servers. This helps reduce in-app purchase fraud and decreases the complexity of your app. Receipt tokens are stored remotely and always kept up-to-date.
  *
  * #### 5. Get Subscription Status
  *
@@ -109,7 +109,7 @@ import { Observable } from 'rxjs';
  * This is a common if your app does not have accounts and is relying on RevenueCat's random App User IDs.
  *
  * ```typescript
- * this.purchases.restore()
+ * this.purchases.restoreTransactions()
  *      .subscribe(info => {
  *           //... check purchaserInfo to see if entitlement is now active
  *      },
@@ -192,51 +192,72 @@ import { Observable } from 'rxjs';
  * _Purchases_ SDK is free to use but some features require a paid plan. You can find more about that on our website on the [pricing plan page](https://www.revenuecat.com/pricing).
  *
  * @interfaces
- * RCPurchaserInfo
+ * PurchaserInfo
  * RCProduct
  * RCMakePurchaseResponse
  * RCError
  */
 @Plugin({
-  pluginName: 'Purchases',
-  plugin: 'cordova-plugin-purchases',
-  pluginRef: 'Purchases', // the variable reference to call the plugin, example: navigator.geolocation
-  repo: 'https://github.com/RevenueCat/cordova-plugin-purchases', // the github repository URL for the plugin
-  platforms: ['Android', 'iOS'] // Array of platforms supported, example: ['Android', 'iOS']
+  pluginName: "Purchases",
+  plugin: "cordova-plugin-purchases",
+  pluginRef: "Purchases", // the variable reference to call the plugin, example: navigator.geolocation
+  repo: "https://github.com/RevenueCat/cordova-plugin-purchases", // the github repository URL for the plugin
+  platforms: ["Android", "iOS"] // Array of platforms supported, example: ['Android', 'iOS']
 })
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root"
 })
 export class Purchases extends IonicNativePlugin {
   /**
    * Sets up Purchases with your API key and an app user id.
-   * @param apiKey {string} RevenueCat API Key. Needs to be a String
-   * @param appUserID {string?} A unique id for identifying the user
+   * @param {string} apiKey RevenueCat API Key. Needs to be a String
+   * @param {string|null} appUserID A unique id for identifying the user
+   * @param {boolean?} observerMode An optional boolean. Set this to TRUE if you have your own IAP implementation and
+   * want to use only RevenueCat's backend. Default is FALSE. If you are on Android and setting this to ON, you will have
+   * to acknowledge the purchases yourself.
    */
   @Cordova({ sync: true })
-  setup(apiKey: string, appUserID: string): void {}
+  setup(
+    apiKey: string,
+    appUserID: string | null,
+    observerMode?: boolean
+  ): void {}
 
   /**
    * Set this to true if you are passing in an appUserID but it is anonymous, this is true by default if you didn't pass an appUserID
    * If a user tries to purchase a product that is active on the current app store account, we will treat it as a restore and alias
    * the new ID with the previous id.
-   * @param allowSharing {boolean} true if enabled, false to diabled
+   * @param {boolean} allowSharing true if enabled, false to diabled
    */
   @Cordova({ sync: true })
   setAllowSharingStoreAccount(allowSharing: boolean): void {}
 
   /**
    * Add a dict of attribution information
-   * @param data { Object.<string, any> } Attribution data from any of the attribution networks in ATTRIBUTION_NETWORKS
-   * @param network {ATTRIBUTION_NETWORKS} Which network, see ATTRIBUTION_NETWORKS
+   * @param {object} data Attribution data from any of the attribution networks in Purchases.ATTRIBUTION_NETWORKS
+   * @param {ATTRIBUTION_NETWORKS} network Which network, see Purchases.ATTRIBUTION_NETWORKS
+   * @param {string?} networkUserId An optional unique id for identifying the user. Needs to be a string.
    */
   @Cordova({ sync: true })
   addAttributionData(
     data: { [key: string]: any },
-    network: ATTRIBUTION_NETWORKS
+    network: ATTRIBUTION_NETWORKS,
+    networkUserId?: string
   ): void {}
 
   /**
+   * Gets the map of entitlements -> offerings -> products
+   *
+   * @return {Observable<RCPurchasesOfferings>} Errors are of type [RCError]
+   */
+  @Cordova({ observable: true })
+  getOfferings(): Observable<RCPurchasesOfferings> {
+    return;
+  }
+
+  /**
+   * @deprecated use getOfferings() instead.
+   *
    * Gets the map of entitlements -> offerings -> products
    *
    * @return {Observable<Map<String, Map<String, Product>>>} Errors are of type [RCError]
@@ -248,8 +269,8 @@ export class Purchases extends IonicNativePlugin {
 
   /**
    * Fetch the product info
-   * @param productIdentifiers {string[]} Array of product identifiers
-   * @param type {ProductType} Optional type of products to fetch, can be inapp or subs. Subs by default
+   * @param {string[]} productIdentifiers Array of product identifiers
+   * @param {ProductType} type Optional type of products to fetch, can be inapp or subs. Subs by default
    *
    * @return {Observable<Array>} Will return an [RCError] if the products are not properly configured in RevenueCat or if there is another error retrieving them.
    */
@@ -261,17 +282,19 @@ export class Purchases extends IonicNativePlugin {
   getProducts(
     productIdentifiers: string[],
     type: ProductType = ProductType.SUBS
-  ): Observable<[RCProduct]> {
+  ): Observable<RCProduct[]> {
     return;
   }
-
   /**
    * Make a purchase
-   * @param productIdentifier {string} The product identifier of the product you want to purchase.
-   * @param oldSku {string} Optional sku you wish to upgrade from.
-   * @param type {String} Optional type of product, can be inapp or subs. Subs by default
    *
-   * @return {Observable<MakePurchaseResponse>} An [RCError] is thrown when user cancels. On error `usercancelled` will be true if user cancelled
+   * @deprecated Use purchaseProduct instead.
+   *
+   * @param {string} productIdentifier The product identifier of the product you want to purchase.
+   * @param {string?} oldSKU Optional sku you wish to upgrade from.
+   * @param {ProductType} type Optional type of product, can be inapp or subs. Subs by default
+   *
+   * @return {Observable<RCMakePurchaseResponse>} An [RCError] is thrown when user cancels. On error `usercancelled` will be true if user cancelled
    */
   @Cordova({
     successIndex: 1,
@@ -280,8 +303,52 @@ export class Purchases extends IonicNativePlugin {
   })
   makePurchase(
     productIdentifier: string,
-    oldSku?: string = null,
+    oldSku: string = null,
     type: ProductType = ProductType.SUBS
+  ): Observable<RCMakePurchaseResponse> {
+    return;
+  }
+
+  /**
+   * Make a purchase
+   *
+   * @param {string} productIdentifier The product identifier of the product you want to purchase.
+   * @param {RCUpgradeInfo} upgradeInfo Android only. Optional UpgradeInfo you wish to upgrade from containing the oldSKU
+   * and the optional prorationMode.
+   * @param {ProductType} type Optional type of product, can be inapp or subs. Subs by default
+   *
+   * @return {Observable<RCMakePurchaseResponse>} An [RCError] is thrown when user cancels. On error `usercancelled` will be true if user cancelled
+   */
+  @Cordova({
+    successIndex: 1,
+    errorIndex: 2,
+    observable: true
+  })
+  purchaseProduct(
+    productIdentifier: string,
+    upgradeInfo?: RCUpgradeInfo | null,
+    type?: ProductType
+  ): Observable<RCMakePurchaseResponse> {
+    return;
+  }
+
+  /**
+   * Make a purchase
+   *
+   * @param {RCPurchasesPackage} aPackage The Package you wish to purchase. You can get the Packages by calling getOfferings
+   * @param {RCUpgradeInfo} upgradeInfo Android only. Optional UpgradeInfo you wish to upgrade from containing the oldSKU
+   * and the optional prorationMode.
+   *
+   * @return {Observable<RCMakePurchaseResponse>} An [RCError] is thrown when user cancels. On error `usercancelled` will be true if user cancelled
+   */
+  @Cordova({
+    successIndex: 1,
+    errorIndex: 2,
+    observable: true
+  })
+  purchasePackage(
+    aPackage: RCPurchasesPackage,
+    upgradeInfo?: RCUpgradeInfo | null
   ): Observable<RCMakePurchaseResponse> {
     return;
   }
@@ -289,7 +356,7 @@ export class Purchases extends IonicNativePlugin {
   /**
    * Restores a user's previous purchases and links their appUserIDs to any user's also using those purchases.
    *
-   * @return {Observable<PurchaserInfo>} Errors are of type [RCError]
+   * @return {Observable<RCPurchaserInfo>} Errors are of type [RCError]
    */
   @Cordova({ observable: true })
   restoreTransactions(): Observable<RCPurchaserInfo> {
@@ -308,9 +375,9 @@ export class Purchases extends IonicNativePlugin {
 
   /**
    * This function will alias two appUserIDs together.
-   * @param newAppUserID {String} The new appUserID that should be linked to the currently identified appUserID. Needs to be a string.
+   * @param {string} newAppUserID The new appUserID that should be linked to the currently identified appUserID. Needs to be a string.
    *
-   * @return {Observable<PurchaserInfo>} Errors are of type [RCError]
+   * @return {Observable<RCPurchaserInfo>} Errors are of type [RCError]
    */
   @Cordova({ observable: true })
   createAlias(newAppUserID: string): Observable<RCPurchaserInfo> {
@@ -319,9 +386,9 @@ export class Purchases extends IonicNativePlugin {
 
   /**
    * This function will identify the current user with an appUserID. Typically this would be used after a logout to identify a new user without calling configure
-   * @param newAppUserID {String} The new appUserID that should be linked to the currently identified appUserID. Needs to be a string.
+   * @param {string} newAppUserID The new appUserID that should be linked to the currently identified appUserID. Needs to be a string.
    *
-   * @return {Observable<PurchaserInfo>} Errors are of type [RCError]
+   * @return {Observable<RCPurchaserInfo>} Errors are of type [RCError]
    */
   @Cordova({ observable: true })
   identify(newAppUserID: string): Observable<RCPurchaserInfo> {
@@ -331,7 +398,7 @@ export class Purchases extends IonicNativePlugin {
   /**
    * Resets the Purchases client clearing the saved appUserID. This will generate a random user id and save it in the cache.
    *
-   * @return {Observable<PurchaserInfo>} Errors are of type [RCError]
+   * @return {Observable<RCPurchaserInfo>} Errors are of type [RCError]
    */
   @Cordova({ observable: true })
   reset(): Observable<RCPurchaserInfo> {
@@ -342,7 +409,7 @@ export class Purchases extends IonicNativePlugin {
    * Gets the current purchaser info. This call will return the cached purchaser info unless the cache is stale, in which case,
    * it will make a network call to retrieve it from the servers.
    *
-   * @return {Observable<PurchaserInfo>} Errors are of type [RCError]
+   * @return {Observable<RCPurchaserInfo>} Errors are of type [RCError]
    */
   @Cordova({ observable: true })
   getPurchaserInfo(): Observable<RCPurchaserInfo> {
@@ -352,12 +419,12 @@ export class Purchases extends IonicNativePlugin {
   /**
    * Returns an observable that can be used to receive updates on the purchaser info
    *
-   * @return {Observable<PurchaserInfo>}
+   * @return {Observable<RCPurchaserInfo>}
    */
   @Cordova({
     eventObservable: true,
-    event: 'onPurchaserInfoUpdated',
-    element: 'window'
+    event: "onPurchaserInfoUpdated",
+    element: "window"
   })
   onPurchaserInfoUpdated(): Observable<RCPurchaserInfo> {
     return;
@@ -365,15 +432,15 @@ export class Purchases extends IonicNativePlugin {
 
   /**
    * Enables/Disables debugs logs
-   * @param enabled {boolean} true to enable debug logs, false to disable
+   * @param {boolean} enabled true to enable debug logs, false to disable
    */
   @Cordova({ sync: true })
   setDebugLogsEnabled(enabled: boolean): void {}
 }
 
 export enum ProductType {
-  SUBS = 'subs',
-  INAPP = 'inapp'
+  SUBS = "subs",
+  INAPP = "inapp"
 }
 
 export enum ATTRIBUTION_NETWORKS {
@@ -381,7 +448,8 @@ export enum ATTRIBUTION_NETWORKS {
   ADJUST = 1,
   APPSFLYER = 2,
   BRANCH = 3,
-  TENJIN = 4
+  TENJIN = 4,
+  FACEBOOK = 5
 }
 
 export interface RCProduct {
@@ -390,20 +458,145 @@ export interface RCProduct {
   title: string;
   price: number;
   price_string: string;
-  intro_price?: string;
+  currency_code: string;
+  intro_price?: number;
   intro_price_string?: string;
   intro_price_period?: string;
   intro_price_cycles?: number;
-  currency_code: string;
+  intro_price_period_unit?: string;
+  intro_price_period_number_of_units?: number;
+}
+
+/**
+ * The EntitlementInfo object gives you access to all of the information about the status of a user entitlement.
+ */
+export interface RCPurchasesEntitlementInfo {
+  /**
+   * The entitlement identifier configured in the RevenueCat dashboard
+   */
+  identifier: string;
+  /**
+   * True if the user has access to this entitlement
+   */
+  isActive: boolean;
+  /**
+   * True if the underlying subscription is set to renew at the end of the billing period (expirationDate).
+   * Will always be True if entitlement is for lifetime access.
+   */
+  willRenew: boolean;
+  /**
+   * The last period type this entitlement was in. Either: NORMAL, INTRO, TRIAL.
+   */
+  periodType: string;
+  /**
+   * The latest purchase or renewal date for the entitlement.
+   */
+  latestPurchaseDate: string;
+  /**
+   * The first date this entitlement was purchased.
+   */
+  originalPurchaseDate: string;
+  /**
+   * The expiration date for the entitlement, can be `null` for lifetime access. If the `periodType` is `trial`,
+   * this is the trial expiration date.
+   */
+  expirationDate: string | null;
+  /**
+   * The store where this entitlement was unlocked from. Either: appStore, macAppStore, playStore, stripe,
+   * promotional, unknownStore
+   */
+  store: string;
+  /**
+   * The product identifier that unlocked this entitlement
+   */
+  productIdentifier: string;
+  /**
+   * False if this entitlement is unlocked via a production purchase
+   */
+  isSandbox: boolean;
+  /**
+   * The date an unsubscribe was detected. Can be `null`.
+   *
+   * @note: Entitlement may still be active even if user has unsubscribed. Check the `isActive` property.
+   */
+  unsubscribeDetectedAt: string | null;
+  /**
+   * The date a billing issue was detected. Can be `null` if there is no billing issue or an issue has been resolved
+   *
+   * @note: Entitlement may still be active even if there is a billing issue. Check the `isActive` property.
+   */
+  billingIssueDetectedAt: string | null;
+}
+
+/**
+ * Contains all the entitlements associated to the user.
+ */
+export interface RCPurchasesEntitlementInfos {
+  /**
+   * Map of all EntitlementInfo (`PurchasesEntitlementInfo`) objects (active and inactive) keyed by entitlement identifier.
+   */
+  all: {
+    [key: string]: RCPurchasesEntitlementInfo;
+  };
+  /**
+   * Map of active EntitlementInfo (`PurchasesEntitlementInfo`) objects keyed by entitlement identifier.
+   */
+  active: {
+    [key: string]: RCPurchasesEntitlementInfo;
+  };
 }
 
 export interface RCPurchaserInfo {
-  activeEntitlements: string[];
-  activeSubscriptions: string[];
-  allPurchasedProductIdentifiers: string[];
-  latestExpirationDate?: string;
-  allExpirationDates: { [key: string]: string | null };
-  expirationsForActiveEntitlements: { [key: string]: string | null };
+  /**
+   * Entitlements attached to this purchaser info
+   */
+  entitlements: RCPurchasesEntitlementInfos;
+  /**
+   * Set of active subscription skus
+   */
+  activeSubscriptions: [string];
+  /**
+   * Set of purchased skus, active and inactive
+   */
+  allPurchasedProductIdentifiers: [string];
+  /**
+   * The latest expiration date of all purchased skus
+   */
+  latestExpirationDate: string | null;
+  /**
+   * The date this user was first seen in RevenueCat.
+   */
+  firstSeen: string;
+  /**
+   * The original App User Id recorded for this user.
+   */
+  originalAppUserId: string;
+  /**
+   * Date when this info was requested
+   */
+  requestDate: string;
+  /**
+   * Map of skus to expiration dates
+   */
+  allExpirationDates: {
+    [key: string]: string | null;
+  };
+  /**
+   * Map of skus to purchase dates
+   */
+  allPurchaseDates: {
+    [key: string]: string | null;
+  };
+  /**
+   * Returns the version number for the version of the application when the
+   * user bought the app. Use this for grandfathering users when migrating
+   * to subscriptions.
+   *
+   * This corresponds to the value of CFBundleVersion (in iOS) in the
+   * Info.plist file when the purchase was originally made. This is always null
+   * in Android
+   */
+  originalApplicationVersion: string | null;
 }
 
 export interface RCMakePurchaseResponse {
@@ -415,4 +608,218 @@ export interface RCError {
   code: number;
   message: string;
   underlyingErrorMessage?: string;
+}
+
+export interface RCPurchasesProduct {
+  /**
+   * Product Id.
+   */
+  identifier: string;
+  /**
+   * Description of the product.
+   */
+  description: string;
+  /**
+   * Title of the product.
+   */
+  title: string;
+  /**
+   * Price of the product in the local currency.
+   */
+  price: number;
+  /**
+   * Formatted price of the item, including its currency sign.
+   */
+  price_string: string;
+  /**
+   * Currency code for price and original price.
+   */
+  currency_code: string;
+  /**
+   * Introductory price of a subscription in the local currency.
+   */
+  intro_price: number | null;
+  /**
+   * Formatted introductory price of a subscription, including its currency sign, such as €3.99.
+   */
+  intro_price_string: string | null;
+  /**
+   * Billing period of the introductory price, specified in ISO 8601 format.
+   */
+  intro_price_period: string | null;
+  /**
+   * Number of subscription billing periods for which the user will be given the introductory price, such as 3.
+   */
+  intro_price_cycles: number | null;
+  /**
+   * Unit for the billing period of the introductory price, can be DAY, WEEK, MONTH or YEAR.
+   */
+  intro_price_period_unit: string | null;
+  /**
+   * Number of units for the billing period of the introductory price.
+   */
+  intro_price_period_number_of_units: number | null;
+}
+/**
+ * Contains information about the product available for the user to purchase.
+ * For more info see https://docs.revenuecat.com/docs/entitlements
+ */
+
+export interface RCPurchasesPackage {
+  /**
+   * Unique identifier for this package. Can be one a predefined package type or a custom one.
+   */
+  identifier: string;
+  /**
+   * Package type for the product. Will be one of [PACKAGE_TYPE].
+   */
+  packageType: PACKAGE_TYPE;
+  /**
+   * Product assigned to this package.
+   */
+  product: RCPurchasesProduct;
+  /**
+   * Offering this package belongs to.
+   */
+  offeringIdentifier: string;
+}
+
+/**
+ * An offering is a collection of Packages (`PurchasesPackage`) available for the user to purchase.
+ * For more info see https://docs.revenuecat.com/docs/entitlements
+ */
+export interface RCPurchasesOffering {
+  /**
+   * Unique identifier defined in RevenueCat dashboard.
+   */
+  identifier: string;
+  /**
+   * Offering description defined in RevenueCat dashboard.
+   */
+  serverDescription: string;
+  /**
+   * Array of `Package` objects available for purchase.
+   */
+  availablePackages: [RCPurchasesPackage];
+  /**
+   * Lifetime package type configured in the RevenueCat dashboard, if available.
+   */
+  lifetime: RCPurchasesPackage | null;
+  /**
+   * Annual package type configured in the RevenueCat dashboard, if available.
+   */
+  annual: RCPurchasesPackage | null;
+  /**
+   * Six month package type configured in the RevenueCat dashboard, if available.
+   */
+  sixMonth: RCPurchasesPackage | null;
+  /**
+   * Three month package type configured in the RevenueCat dashboard, if available.
+   */
+  threeMonth: RCPurchasesPackage | null;
+  /**
+   * Two month package type configured in the RevenueCat dashboard, if available.
+   */
+  twoMonth: RCPurchasesPackage | null;
+  /**
+   * Monthly package type configured in the RevenueCat dashboard, if available.
+   */
+  monthly: RCPurchasesPackage | null;
+  /**
+   * Weekly package type configured in the RevenueCat dashboard, if available.
+   */
+  weekly: RCPurchasesPackage | null;
+}
+
+/**
+ * Contains all the offerings configured in RevenueCat dashboard.
+ * For more info see https://docs.revenuecat.com/docs/entitlements
+ */
+export interface RCPurchasesOfferings {
+  /**
+   * Map of all Offerings [PurchasesOffering] objects keyed by their identifier.
+   */
+  all: {
+    [key: string]: RCPurchasesOffering;
+  };
+  /**
+   * Current offering configured in the RevenueCat dashboard.
+   */
+  current: RCPurchasesOffering | null;
+}
+export enum PRORATION_MODE {
+  UNKNOWN_SUBSCRIPTION_UPGRADE_DOWNGRADE_POLICY = 0,
+  /**
+   * Replacement takes effect immediately, and the remaining time will be
+   * prorated and credited to the user. This is the current default behavior.
+   */
+  IMMEDIATE_WITH_TIME_PRORATION = 1,
+  /**
+   * Replacement takes effect immediately, and the billing cycle remains the
+   * same. The price for the remaining period will be charged. This option is
+   * only available for subscription upgrade.
+   */
+  IMMEDIATE_AND_CHARGE_PRORATED_PRICE = 2,
+  /**
+   * Replacement takes effect immediately, and the new price will be charged on
+   * next recurrence time. The billing cycle stays the same.
+   */
+  IMMEDIATE_WITHOUT_PRORATION = 3,
+  /**
+   * Replacement takes effect when the old plan expires, and the new price will
+   * be charged at the same time.
+   */
+  DEFERRED = 4
+}
+export enum PACKAGE_TYPE {
+  /**
+   * A package that was defined with a custom identifier.
+   */
+  UNKNOWN = "UNKNOWN",
+  /**
+   * A package that was defined with a custom identifier.
+   */
+  CUSTOM = "CUSTOM",
+  /**
+   * A package configured with the predefined lifetime identifier.
+   */
+  LIFETIME = "LIFETIME",
+  /**
+   * A package configured with the predefined annual identifier.
+   */
+  ANNUAL = "ANNUAL",
+  /**
+   * A package configured with the predefined six month identifier.
+   */
+  SIX_MONTH = "SIX_MONTH",
+  /**
+   * A package configured with the predefined three month identifier.
+   */
+  THREE_MONTH = "THREE_MONTH",
+  /**
+   * A package configured with the predefined two month identifier.
+   */
+  TWO_MONTH = "TWO_MONTH",
+  /**
+   * A package configured with the predefined monthly identifier.
+   */
+  MONTHLY = "MONTHLY",
+  /**
+   * A package configured with the predefined weekly identifier.
+   */
+  WEEKLY = "WEEKLY"
+}
+
+/**
+ * Holds the information used when upgrading from another sku. For Android use only.
+ */
+export interface RCUpgradeInfo {
+  /**
+   * The oldSKU to upgrade from.
+   */
+  oldSKU: string;
+  /**
+   * The [PRORATION_MODE] to use when upgrading the given oldSKU.
+   */
+  prorationMode?: PRORATION_MODE;
 }
